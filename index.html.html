@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>April Shin — Event Operations &amp; Live Production</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:      #EEF0F2;
+    --paper-alt:  #E2E5E8;
+    --panel:      #FFFFFF;
+    --ink:        #13202B;
+    --ink-soft:   #4B5A66;
+    --ink-faint:  #7C8A96;
+    --cue-red:    #D1272B;
+    --cue-red-dim:#9C1E21;
+    --amber:      #E8A23A;
+    --line:       #C7CCD1;
+    --line-soft:  #DADEE1;
+    --radius:     2px;
+    --maxw:       1080px;
+  }
+
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  @media (prefers-reduced-motion: reduce){
+    html{ scroll-behavior:auto; }
+    *{ animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; }
+  }
+
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter', sans-serif;
+    font-size:16px;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  a{ color:inherit; }
+
+  .wrap{
+    max-width:var(--maxw);
+    margin:0 auto;
+    padding:0 28px;
+  }
+
+  /* ---------- NAV ---------- */
+  .nav{
+    position:sticky; top:0; z-index:50;
+    background:rgba(238,240,242,0.92);
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav .wrap{
+    display:flex; align-items:center; justify-content:space-between;
+    padding-top:14px; padding-bottom:14px;
+  }
+  .nav-mark{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px; letter-spacing:0.14em;
+    color:var(--ink-soft);
+    text-transform:uppercase;
+  }
+  .nav-links{
+    display:flex; gap:26px; list-style:none; margin:0; padding:0;
+  }
+  .nav-links a{
+    font-family:'Oswald', sans-serif;
+    font-size:13px; letter-spacing:0.08em; text-transform:uppercase;
+    text-decoration:none; color:var(--ink-soft);
+    border-bottom:2px solid transparent;
+    padding-bottom:3px;
+    transition:color .15s ease, border-color .15s ease;
+  }
+  .nav-links a:hover, .nav-links a:focus-visible{ color:var(--cue-red); border-color:var(--cue-red); }
+  @media (max-width:640px){ .nav-links{ gap:16px; } .nav-links a{ font-size:11px; } }
+
+  /* ---------- HERO / CREDENTIAL ---------- */
+  .hero{
+    padding:72px 0 56px;
+    border-bottom:1px solid var(--line);
+  }
+  .cue-badge{
+    display:inline-flex; align-items:center; gap:9px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px; letter-spacing:0.14em; text-transform:uppercase;
+    color:var(--ink-soft);
+    background:var(--panel);
+    border:1px solid var(--line);
+    padding:6px 12px;
+    border-radius:20px;
+    margin-bottom:28px;
+  }
+  .cue-dot{
+    width:8px; height:8px; border-radius:50%;
+    background:var(--cue-red);
+    box-shadow:0 0 0 0 rgba(209,39,43,0.55);
+    animation:pulse 2.2s ease-in-out infinite;
+  }
+  @keyframes pulse{
+    0%{ box-shadow:0 0 0 0 rgba(209,39,43,0.45); }
+    70%{ box-shadow:0 0 0 7px rgba(209,39,43,0); }
+    100%{ box-shadow:0 0 0 0 rgba(209,39,43,0); }
+  }
+
+  .hero-grid{
+    display:grid;
+    grid-template-columns:1.5fr 1fr;
+    gap:40px;
+    align-items:end;
+  }
+  @media (max-width:800px){ .hero-grid{ grid-template-columns:1fr; } }
+
+  .hero h1{
+    font-family:'Bebas Neue', sans-serif;
+    font-weight:400;
+    font-size:clamp(52px, 9vw, 96px);
+    line-height:0.92;
+    letter-spacing:0.01em;
+    margin:0 0 10px;
+    color:var(--ink);
+  }
+  .hero .role{
+    font-family:'Oswald', sans-serif;
+    font-weight:500;
+    font-size:19px;
+    letter-spacing:0.03em;
+    color:var(--cue-red);
+    margin:0 0 18px;
+    text-transform:uppercase;
+  }
+  .hero p.deck{
+    max-width:52ch;
+    color:var(--ink-soft);
+    font-size:16px;
+    margin:0;
+  }
+
+  .credential{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:20px 22px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:12.5px;
+    color:var(--ink-soft);
+  }
+  .credential .row{
+    display:flex; justify-content:space-between;
+    padding:7px 0;
+    border-bottom:1px dashed var(--line-soft);
+  }
+  .credential .row:last-child{ border-bottom:none; }
+  .credential .row span:first-child{ color:var(--ink-faint); text-transform:uppercase; letter-spacing:0.08em; }
+  .credential .row span:last-child{ color:var(--ink); text-align:right; }
+
+  /* ---------- STATS STRIP ---------- */
+  .stats{
+    border-bottom:1px solid var(--line);
+    background:var(--paper-alt);
+  }
+  .stats .wrap{
+    display:grid;
+    grid-template-columns:repeat(5, 1fr);
+    padding:22px 28px;
+  }
+  .stat{
+    padding:0 14px;
+    border-left:1px solid var(--line);
+  }
+  .stat:first-child{ border-left:none; padding-left:0; }
+  .stat .num{
+    font-family:'JetBrains Mono', monospace;
+    font-weight:600;
+    font-size:22px;
+    color:var(--ink);
+    display:block;
+  }
+  .stat .lbl{
+    font-family:'Oswald', sans-serif;
+    font-size:11px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+  }
+  @media (max-width:800px){
+    .stats .wrap{ grid-template-columns:repeat(2, 1fr); row-gap:18px; }
+    .stat{ border-left:none; padding-left:0; }
+  }
+
+  /* ---------- SECTION HEADS ---------- */
+  section{ padding:64px 0; }
+  .section-head{
+    display:flex; align-items:baseline; gap:14px;
+    margin-bottom:34px;
+  }
+  .section-head .tag{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px; color:var(--cue-red);
+    letter-spacing:0.1em;
+  }
+  .section-head h2{
+    font-family:'Oswald', sans-serif;
+    font-weight:600;
+    font-size:26px;
+    letter-spacing:0.02em;
+    text-transform:uppercase;
+    margin:0;
+  }
+  .section-head .rule{
+    flex:1; height:1px; background:var(--line);
+  }
+  .lede{
+    max-width:64ch;
+    color:var(--ink-soft);
+    margin:-18px 0 40px;
+    font-size:15px;
+  }
+
+  /* ---------- PRODUCTIONS (CUE CARDS) ---------- */
+  .cue{
+    display:grid;
+    grid-template-columns:96px 1fr;
+    gap:0 28px;
+    padding:34px 0;
+    border-top:1px solid var(--line-soft);
+    opacity:0; transform:translateY(14px);
+    transition:opacity .55s ease, transform .55s ease;
+  }
+  .cue.in{ opacity:1; transform:translateY(0); }
+  .cue:last-child{ border-bottom:1px solid var(--line-soft); }
+
+  .cue-num{
+    font-family:'JetBrains Mono', monospace;
+    font-size:13px; color:var(--ink-faint);
+    letter-spacing:0.08em;
+    padding-top:4px;
+  }
+  .cue-num strong{
+    display:block;
+    font-size:30px;
+    color:var(--cue-red);
+    font-weight:600;
+    line-height:1;
+    margin-bottom:6px;
+  }
+
+  .cue-title-row{
+    display:flex; flex-wrap:wrap; align-items:baseline; gap:12px;
+    margin-bottom:6px;
+  }
+  .cue-title-row h3{
+    font-family:'Oswald', sans-serif;
+    font-size:22px; font-weight:600;
+    margin:0;
+    text-transform:uppercase;
+    letter-spacing:0.01em;
+  }
+  .cue-cat{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px; letter-spacing:0.06em; text-transform:uppercase;
+    color:var(--amber);
+    background:rgba(232,162,58,0.14);
+    border:1px solid rgba(232,162,58,0.4);
+    padding:3px 8px;
+    border-radius:20px;
+  }
+  .cue-meta{
+    display:flex; flex-wrap:wrap; gap:6px 22px;
+    font-size:13px; color:var(--ink-soft);
+    margin-bottom:16px;
+  }
+  .cue-meta b{ color:var(--ink); font-weight:600; }
+
+  .cue-photo{
+    border:1px dashed var(--line);
+    background:var(--paper-alt);
+    color:var(--ink-faint);
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px; letter-spacing:0.04em;
+    text-align:center;
+    padding:26px 14px;
+    margin:4px 0 20px;
+    border-radius:var(--radius);
+  }
+
+  .cue-block{ margin-bottom:16px; }
+  .cue-block h4{
+    font-family:'Oswald', sans-serif;
+    font-size:12.5px; letter-spacing:0.1em; text-transform:uppercase;
+    color:var(--cue-red);
+    margin:0 0 6px;
+  }
+  .cue-block p{ margin:0; color:var(--ink); font-size:15px; }
+  .cue-block ul{ margin:0; padding-left:18px; }
+  .cue-block li{ margin-bottom:5px; font-size:15px; }
+
+  @media (max-width:640px){
+    .cue{ grid-template-columns:1fr; }
+    .cue-num{ display:flex; align-items:baseline; gap:10px; padding-top:0; margin-bottom:10px; }
+    .cue-num strong{ margin-bottom:0; }
+  }
+
+  /* ---------- SKILLS (RUN SHEET) ---------- */
+  .runsheet{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:6px 0;
+  }
+  .runsheet li{
+    list-style:none;
+    display:flex; align-items:center; gap:14px;
+    padding:14px 24px;
+    border-bottom:1px solid var(--line-soft);
+    font-size:15px;
+  }
+  .runsheet li:last-child{ border-bottom:none; }
+  .runsheet .check{
+    width:18px; height:18px; flex:none;
+    border:1.5px solid var(--cue-red);
+    border-radius:3px;
+    position:relative;
+  }
+  .runsheet .check::after{
+    content:"";
+    position:absolute; left:3px; top:0px;
+    width:5px; height:9px;
+    border-right:2px solid var(--cue-red);
+    border-bottom:2px solid var(--cue-red);
+    transform:rotate(40deg);
+  }
+  .runsheet{ margin:0; padding-left:0; }
+
+  /* ---------- BUILD NOTE ---------- */
+  .buildnote{
+    background:var(--paper-alt);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:26px 28px;
+  }
+  .buildnote h3{
+    font-family:'Oswald', sans-serif;
+    font-size:14px; letter-spacing:0.08em; text-transform:uppercase;
+    margin:0 0 12px; color:var(--ink);
+  }
+  .buildnote ul{ margin:0; padding-left:18px; color:var(--ink-soft); font-size:14.5px; }
+  .buildnote li{ margin-bottom:7px; }
+
+  /* ---------- FOOTER / CONTACT ---------- */
+  footer{
+    border-top:1px solid var(--line);
+    padding:52px 0 60px;
+  }
+  .contact-grid{
+    display:grid;
+    grid-template-columns:1.2fr 1fr;
+    gap:36px;
+  }
+  @media (max-width:700px){ .contact-grid{ grid-template-columns:1fr; } }
+
+  footer h2{
+    font-family:'Bebas Neue', sans-serif;
+    font-weight:400;
+    font-size:44px;
+    line-height:1;
+    margin:0 0 14px;
+  }
+  footer p{ color:var(--ink-soft); max-width:44ch; margin:0 0 22px; }
+
+  .btn{
+    display:inline-flex; align-items:center; gap:8px;
+    font-family:'Oswald', sans-serif;
+    font-size:13px; letter-spacing:0.08em; text-transform:uppercase;
+    text-decoration:none;
+    background:var(--ink);
+    color:var(--paper);
+    padding:13px 22px;
+    border-radius:var(--radius);
+    border:1px solid var(--ink);
+    transition:background .15s ease, color .15s ease;
+  }
+  .btn:hover, .btn:focus-visible{ background:var(--cue-red); border-color:var(--cue-red); }
+  .btn.ghost{
+    background:transparent; color:var(--ink);
+    margin-left:10px;
+  }
+  .btn.ghost:hover, .btn.ghost:focus-visible{ background:var(--ink); color:var(--paper); }
+
+  .contact-card{
+    font-family:'JetBrains Mono', monospace;
+    font-size:13px;
+  }
+  .contact-card .row{
+    display:flex; justify-content:space-between;
+    padding:10px 0;
+    border-bottom:1px dashed var(--line);
+    color:var(--ink-soft);
+  }
+  .contact-card .row span:last-child{ color:var(--ink); }
+
+  .foot-legal{
+    margin-top:40px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    color:var(--ink-faint);
+    letter-spacing:0.04em;
+  }
+
+  :focus-visible{ outline:2px solid var(--cue-red); outline-offset:2px; }
+</style>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="wrap">
+      <span class="nav-mark">APRIL SHIN // PRODUCTION PORTFOLIO</span>
+      <ul class="nav-links">
+        <li><a href="#productions">Productions</a></li>
+        <li><a href="#skills">Skills</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="wrap">
+      <span class="cue-badge"><span class="cue-dot" aria-hidden="true"></span> Standing By — Open to PM / Operations Roles in Events, Gaming &amp; Entertainment</span>
+      <div class="hero-grid">
+        <div>
+          <h1>April&nbsp;Shin</h1>
+          <p class="role">Event Operations &amp; Live Production</p>
+          <p class="deck">I run the parts of a live show the audience never sees — install, run-of-show, budget, and crew — so the parts they do see go off without a hitch. 25+ national conventions and activations produced, start to close.</p>
+        </div>
+        <div class="credential" aria-label="Production credential summary">
+          <div class="row"><span>Based in</span><span>La Mirada, CA</span></div>
+          <div class="row"><span>Focus</span><span>Live Production / Ops</span></div>
+          <div class="row"><span>Crew Led</span><span>Up to 100</span></div>
+          <div class="row"><span>Budget Scope</span><span>$300K – $1M+ / event</span></div>
+          <div class="row"><span>Contact</span><span>Aprilyshin@gmail.com</span></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="stats">
+    <div class="wrap">
+      <div class="stat"><span class="num">25+</span><span class="lbl">Conventions Produced</span></div>
+      <div class="stat"><span class="num">1,000+</span><span class="lbl">Exhibitor Booths</span></div>
+      <div class="stat"><span class="num">200K</span><span class="lbl">Exhibitors / Year</span></div>
+      <div class="stat"><span class="num">100</span><span class="lbl">Crew On Site</span></div>
+      <div class="stat"><span class="num">$1M+</span><span class="lbl">Per-Event Budget</span></div>
+    </div>
+  </div>
+
+  <section id="productions">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="tag">RUN OF SHOW</span>
+        <h2>Selected Productions</h2>
+        <div class="rule"></div>
+      </div>
+      <p class="lede">Three national-scale productions, each run under a fixed date that could not move. Presented in cue order: challenge, execution, result.</p>
+
+      <article class="cue" data-cue>
+        <div class="cue-num"><strong>01</strong>D23</div>
+        <div>
+          <div class="cue-title-row">
+            <h3>The Ultimate Disney Fan Event</h3>
+            <span class="cue-cat">Entertainment / Fan Experience</span>
+          </div>
+          <div class="cue-meta">
+            <span><b>Role:</b> Electrical Ops Coordinator, Freeman</span>
+            <span><b>Scale:</b> 1,000+ exhibitor booths</span>
+          </div>
+          <div class="cue-photo">[ Photo / floor plan / crew shot from D23 ]</div>
+          <div class="cue-block">
+            <h4>Challenge</h4>
+            <p>Deliver electrical infrastructure across a massive, multi-day fan convention floor — coordinated among fabricators, general contractors, and Disney-side stakeholders — with zero tolerance for downtime once doors opened.</p>
+          </div>
+          <div class="cue-block">
+            <h4>Execution</h4>
+            <ul>
+              <li>Directed run-of-show and live production across planning, install, show days, and teardown</li>
+              <li>Coordinated fabrication and build-out schedules with exhibit fabricators and GCs to keep 1,000+ booths on track</li>
+              <li>Managed an on-site crew of electricians, adjusting staffing in real time as install timelines shifted</li>
+              <li>Resolved live production issues on the ground before they reached the client</li>
+            </ul>
+          </div>
+          <div class="cue-block">
+            <h4>Result</h4>
+            <p>Full show-floor power and electrical readiness delivered on schedule, with no client-facing service disruptions.</p>
+          </div>
+        </div>
+      </article>
+
+      <article class="cue" data-cue>
+        <div class="cue-num"><strong>02</strong>NAMM</div>
+        <div>
+          <div class="cue-title-row">
+            <h3>NAMM Show</h3>
+            <span class="cue-cat">Music / Entertainment Industry</span>
+          </div>
+          <div class="cue-meta">
+            <span><b>Role:</b> Electrical Ops Coordinator, Freeman</span>
+            <span><b>Scale:</b> World's largest music products trade show</span>
+          </div>
+          <div class="cue-photo">[ Photo / floor plan from NAMM ]</div>
+          <div class="cue-block">
+            <h4>Challenge</h4>
+            <p>Support a floor where booths ranged from independent brands to major instrument and audio manufacturers, each with distinct power and production needs, on a fixed calendar shared with other concurrent shows.</p>
+          </div>
+          <div class="cue-block">
+            <h4>Execution</h4>
+            <ul>
+              <li>Managed event production timelines alongside other concurrent shows in the Freeman portfolio</li>
+              <li>Partnered with agency, decorator, and client-side stakeholders to align electrical scope with exhibitor build needs</li>
+              <li>Tracked and administered production costs and invoicing for full client transparency</li>
+            </ul>
+          </div>
+          <div class="cue-block">
+            <h4>Result</h4>
+            <p>Delivered electrical production support with no impact to exhibitor move-in or show open times.</p>
+          </div>
+        </div>
+      </article>
+
+      <article class="cue" data-cue>
+        <div class="cue-num"><strong>03</strong>RE+</div>
+        <div>
+          <div class="cue-title-row">
+            <h3>RE+</h3>
+            <span class="cue-cat">Large-Scale Trade Show Production</span>
+          </div>
+          <div class="cue-meta">
+            <span><b>Role:</b> Electrical Ops Coordinator, Freeman</span>
+            <span><b>Scale:</b> North America's largest clean energy trade show</span>
+          </div>
+          <div class="cue-photo">[ Photo / signage from RE+ ]</div>
+          <div class="cue-block">
+            <h4>Challenge</h4>
+            <p>Coordinate a high-volume show floor build under a compressed install window, with multiple general contractors and exhibit crews working simultaneously.</p>
+          </div>
+          <div class="cue-block">
+            <h4>Execution</h4>
+            <ul>
+              <li>Directed workforce planning across install, live show days, and teardown</li>
+              <li>Oversaw project documentation, including change orders, service requests, and client invoicing</li>
+              <li>Acted as the primary liaison between foremen, vendors, and the client to hold the schedule</li>
+            </ul>
+          </div>
+          <div class="cue-block">
+            <h4>Result</h4>
+            <p>Delivered a fully operational show floor on time, supporting one of the industry's highest-volume annual events.</p>
+          </div>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <section id="skills">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="tag">PRE-SHOW CHECK</span>
+        <h2>Core Skills</h2>
+        <div class="rule"></div>
+      </div>
+      <ul class="runsheet">
+        <li><span class="check" aria-hidden="true"></span> Live production &amp; run-of-show management</li>
+        <li><span class="check" aria-hidden="true"></span> Fabrication and build-out coordination with GCs and exhibit vendors</li>
+        <li><span class="check" aria-hidden="true"></span> Field crew leadership — teams up to 100</li>
+        <li><span class="check" aria-hidden="true"></span> Budget administration and client invoicing ($300K–$1M+ per event)</li>
+        <li><span class="check" aria-hidden="true"></span> Vendor, agency, and client relationship management under live deadlines</li>
+        <li><span class="check" aria-hidden="true"></span> Concurrent, multi-project coordination — planning through closeout</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="section-head">
+        <span class="tag">NOTE</span>
+        <h2>Finishing This Site</h2>
+        <div class="rule"></div>
+      </div>
+      <div class="buildnote">
+        <h3>Before this goes live</h3>
+        <ul>
+          <li>Swap in real photos, floor plans, or crew shots for each production (many are available from Freeman or the event organizers, or your own site photos)</li>
+          <li>Add a headshot to the hero credential block if you'd like one</li>
+          <li>If targeting gaming specifically, add a short line bridging trade-show production to gaming conventions or esports events — similar scale and live-production demands</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <footer id="contact">
+    <div class="wrap">
+      <div class="contact-grid">
+        <div>
+          <h2>Let's talk<br>production.</h2>
+          <p>Open to Producer, Project Manager, and Operations Manager roles across events, gaming, and entertainment.</p>
+          <a class="btn" href="mailto:Aprilyshin@gmail.com">Email Me</a>
+        </div>
+        <div class="contact-card" aria-label="Contact details">
+          <div class="row"><span>Email</span><span>Aprilyshin@gmail.com</span></div>
+          <div class="row"><span>Phone</span><span>657-243-3915</span></div>
+          <div class="row"><span>LinkedIn</span><span>LinkedIn.com/in/aprilshin2025</span></div>
+          <div class="row"><span>Location</span><span>La Mirada, CA</span></div>
+        </div>
+      </div>
+      <div class="foot-legal">© 2026 APRIL SHIN — EVENT OPERATIONS &amp; LIVE PRODUCTION</div>
+    </div>
+  </footer>
+
+<script>
+  // Reveal cue cards as they enter view (skipped entirely if reduced motion is preferred)
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const cues = document.querySelectorAll('[data-cue]');
+  if (prefersReduced) {
+    cues.forEach(el => el.classList.add('in'));
+  } else if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15 });
+    cues.forEach(el => io.observe(el));
+  } else {
+    cues.forEach(el => el.classList.add('in'));
+  }
+</script>
+
+</body>
+</html>
